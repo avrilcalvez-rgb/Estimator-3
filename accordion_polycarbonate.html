@@ -36,6 +36,17 @@
     .headerbar{ display:flex; align-items:center; justify-content:space-between; background:linear-gradient(90deg,var(--accent-weak),#fff); border:1px solid var(--border); border-radius:14px; padding:10px 14px; margin-bottom:14px }
     .hi-box{ background:var(--hi); border:1px solid var(--hi-border); border-radius:10px; padding:10px 12px; font-weight:700; display:flex; align-items:center; justify-content:space-between; gap:8px; flex-wrap:wrap }
     .subpill{ font-weight:600; padding:4px 8px; border-radius:8px; background:#fff; border:1px dashed var(--hi-border) }
+  
+    /* Yellow badge for highlighted outputs (Notes/Powdercoat) */
+    .note-badge{
+      display:inline-block;
+      background: var(--hi);
+      border: 1px solid var(--hi-border);
+      border-radius: 8px;
+      padding: 2px 6px;
+      font-weight: 700;
+      color: var(--ink);
+    }
   </style>
 </head>
 <body>
@@ -127,6 +138,11 @@
           <option>Warranty</option>
         </select>
       </div>
+      <div class="row">
+        <label for="notes">Notes</label>
+        <textarea id="notes" rows="2" placeholder="Add job notes here..."></textarea>
+      </div>
+    
 
       <h2>Formula‑168 Constants (match your sheet)</h2>
       <div class="grid2">
@@ -172,6 +188,7 @@
           <div><strong>Size (W×H):</strong> <span id="o_size" class="mono">—</span></div>
           <div><strong>Direction:</strong> <span id="o_dir" class="mono">—</span></div>
           <div><strong>Status:</strong> <span id="o_status" class="mono">—</span></div>
+          <div><strong>Notes:</strong> <span id="o_notes" class="mono">—</span></div>
         </div>
       </div>
 
@@ -278,11 +295,17 @@
     $('o_color').textContent = $('panel_color').value;
     const powder = $('powder').value.trim();
     $('o_powder').textContent = powder ? `Yes (${powder})` : 'No';
+    (function(o){ if(!o) return; o.className = powder ? 'mono note-badge' : 'mono'; })($('o_powder'));
     $('o_purpose').textContent = $('purpose').value;
     $('o_branch').textContent  = $('branch').value;
     $('o_size').textContent    = `${w} × ${h}`;
     $('o_status').textContent  = $('status').value;
     $('o_client').textContent  = $('client').value || '—';
+
+    // Notes live output + highlight
+    const notes = ($('notes') && $('notes').value) ? $('notes').value : '';
+    $('o_notes').textContent = (notes || '').trim() || '—';
+    (function(o){ if(!o) return; o.className = (notes && notes.trim()) ? 'mono note-badge' : 'mono'; })($('o_notes'));
     $('o_dir').textContent     = $('direction').value;
 
     // Hidden deduction logic
@@ -298,10 +321,10 @@
     $('len_panel').textContent = h - panel_ded;
   }
 
-  const ids = ['mode','direction','wmm','hmm','panel_color','powder','purpose','branch','client','status','add_pcs','offset_mm','step_mm','manual_qty'];
+  const ids = ['mode','direction','wmm','hmm','panel_color','powder','purpose','branch','client','status','add_pcs','offset_mm','step_mm','manual_qty', 'notes'];
   ids.forEach(id => {
     const el = $(id);
-    const evt = (el.tagName === 'SELECT' || el.tagName === 'TEXTAREA') ? 'change' : 'input';
+    const evt = (el.tagName === 'SELECT') ? 'change' : 'input';
     el.addEventListener(evt, compute);
   });
 

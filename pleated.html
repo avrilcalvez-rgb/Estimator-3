@@ -44,6 +44,25 @@
     .title-line{font-size:20px;margin:4px 0 8px}
     th,td{padding:5px 5px}
   }
+
+  /* Powdercoat highlight */
+  .pc-on{background:#fff7a3!important;border-color:#fde047!important;box-shadow:0 0 0 2px rgba(253,224,71,.35) inset}
+  .pc-badge{display:inline-block;background:#fff7a3;border:1px solid #fde047;border-radius:8px;padding:2px 6px;font-weight:700}
+  /* stronger visibility even in dark themes */
+  .pc-on{background:#fff7a3!important;border-color:#facc15!important;outline:2px solid #facc15!important;box-shadow:0 0 0 3px rgba(250,204,21,.55) inset,0 0 0 2px rgba(250,204,21,.35);color-scheme:light}
+  .pc-row-on{background:rgba(250,204,21,.12);border-radius:10px}
+  /* Readability: black text in powdercoat area only */
+  .pc-on{ color:#111 !important; caret-color:#111 !important; }
+  .pc-row-on label{ color:#111 !important; }
+  .pc-badge{ color:#111 !important; }
+
+
+
+  /* Notes highlight */
+  .note-on{background:#fef3c7!important;border-color:#f59e0b!important;outline:2px solid #f59e0b!important;box-shadow:0 0 0 3px rgba(245,158,11,.35) inset}
+  .note-row-on{background:rgba(245,158,11,.12);border-radius:10px}
+  .note-badge{display:inline-block;background:#fef3c7;border:1px solid #f59e0b;border-radius:8px;padding:2px 6px;font-weight:700;color:#111}
+
 </style>
 </head>
 <body>
@@ -72,6 +91,18 @@
         <option>Gray</option>
       </select>
     </div>
+    <div class="row"><label>Accessories Color</label>
+      <select id="acc_color">
+        <option>White</option>
+        <option>Black</option>
+      </select>
+    </div>
+    <div class="row"><label>Job Type (New or Repair)</label>
+      <select id="replacement">
+        <option value="new">New (Complete)</option>
+        <option value="repair">Repair (Mesh Only)</option>
+      </select>
+    </div>
     <div class="row"><label>Powdercoat Code</label><input id="powder_code" placeholder="e.g., A1533"></div>
     <div class="row"><label>Client</label><input id="client" placeholder="Client name"></div>
     <div class="row"><label>Branch</label>
@@ -97,6 +128,7 @@
       <div class="meta-block">
         <div class="row-line"><span>Client:</span><span id="out_client" class="mono">—</span></div>
         <div class="row-line"><span>Mesh:</span><span id="out_mesh_color" class="mono">—</span></div>
+        <div class="row-line"><span>Accessories:</span><span id="out_accessories" class="mono">—</span></div>
         <div class="row-line"><span>Powdercoat:</span><span id="out_powder" class="mono">No</span></div>
         <div class="row-line"><span>Notes:</span><span id="out_notes" class="mono">—</span></div>
       </div>
@@ -107,7 +139,9 @@
     </div>
 
     <div class="section">
-      <h2>Cuttings (mm)</h2>
+      <div id="cuttings_block">
+<h2 id="cuttings_header">Aluminum cuttings (mm)</h2>
+      <div id="cuttings_notice" style="display:none;font-size:12px;color:#64748b;margin:6px 0 8px;">Aluminum cuttings are not needed for <strong>Mesh Repair</strong>.</div>
       <table>
         <thead><tr><th>Material</th><th class="right">Qty</th><th class="right">Length (mm)</th></tr></thead>
         <tbody id="cuttings_body">
@@ -119,6 +153,7 @@
           <tr><td>Middle profile (X025)</td><td class="right mono">x1</td><td class="right mono" id="len_middle_profile">—</td></tr>
         </tbody>
       </table>
+</div>
     </div>
 
     <div class="section two-col">
@@ -128,7 +163,11 @@
           <thead><tr><th>Item</th><th>Color</th><th class="right">Value</th></tr></thead>
           <tbody>
             <tr><td>mesh(H)</td><td id="mesh_color_cell">—</td><td class="right mono" id="mesh_h_value">—</td></tr>
-            <tr><td>mesh(fold)</td><td>—</td><td class="right mono" id="mesh_fold_value">—</td></tr>
+            <tr id="mesh_fold_total_row"><td>mesh(fold)</td><td>—</td><td class="right mono" id="mesh_fold_value">—</td></tr>
+            <tr id="mesh_fold_per_leaf_row" style="display:none"><td>mesh(fold per leaf)</td><td>—</td><td class="right mono" id="mesh_fold_per_leaf_value">—</td></tr>
+
+            <tr id="mesh_fold_left_row" style="display:none"><td>mesh(fold left)</td><td>—</td><td class="right mono" id="mesh_fold_left_value">—</td></tr>
+            <tr id="mesh_fold_right_row" style="display:none"><td>mesh(fold right)</td><td>—</td><td class="right mono" id="mesh_fold_right_value">—</td></tr>
           </tbody>
         </table>
       </div>
@@ -168,6 +207,24 @@
     return 12;
   }
 
+  function setNotesHighlight(on){
+    var inp = document.getElementById('notes');
+    var out = document.getElementById('out_notes');
+    if (!inp || !out) return;
+    var row = inp.closest ? inp.closest('.row') : inp.parentElement;
+    if (on){ inp.classList.add('note-on'); if(row) row.classList.add('note-row-on'); if(out) out.className='mono note-badge'; }
+    else { inp.classList.remove('note-on'); if(row) row.classList.remove('note-row-on'); if(out) out.className='mono'; }
+  }
+
+  function setPowderHighlight(on){
+    var inp = document.getElementById('powder_code');
+    var out = document.getElementById('out_powder');
+    if (!inp || !out) return;
+    var row = inp.closest ? inp.closest('.row') : inp.parentElement;
+    if (on){ inp.classList.add('pc-on'); out.className='mono pc-badge'; if(row) row.classList.add('pc-row-on'); }
+    else { inp.classList.remove('pc-on'); out.className='mono'; if(row) row.classList.remove('pc-row-on'); }
+  }
+
   function compute(){
     const dir = document.getElementById('direction').value; // One Way / Two Way
     const w = +document.getElementById('width_mm').value || 0;
@@ -183,7 +240,18 @@
     document.getElementById('out_client').textContent = client || '—';
     document.getElementById('out_branch').textContent = branch;
     document.getElementById('out_size').textContent = `${w} × ${h}`;
+    var job = (document.getElementById('replacement')||{}).value || 'new';
+    var replacementOnly = (job === 'repair');
+    var ct = document.getElementById('cuttings_table'); if (ct) ct.style.display = replacementOnly ? 'none' : '';
+    var cb = document.getElementById('cuttings_block'); if (cb) cb.style.display = replacementOnly ? 'none' : '';
+    var cn = document.getElementById('cuttings_notice'); if (cn) cn.style.display = replacementOnly ? 'none' : '';
+    var ch = document.getElementById('cuttings_header'); if (ch) ch.style.display = replacementOnly ? 'none' : '';
+    var ch = document.getElementById('cuttings_header'); if (ch) ch.style.display = replacementOnly ? 'none' : '';
     document.getElementById('out_mesh_color').textContent = meshColor;
+    var acc = (document.getElementById('acc_color')||{}).value || '';
+    var oa = document.getElementById('out_accessories'); if(oa) oa.textContent = acc || '—';
+    var acc = (document.getElementById('acc_color')||{}).value || '';
+    var outAcc = document.getElementById('out_accessories'); if(outAcc) outAcc.textContent = acc || '—';
     document.getElementById('mesh_color_cell').textContent = meshColor;
     document.getElementById('out_notes').textContent = notes || '—';
     document.getElementById('out_powder').textContent = powder ? `Yes (${powder})` : 'No';
@@ -210,6 +278,29 @@
     const meshFold = Math.round(w / 20);
     document.getElementById('mesh_h_value').textContent = meshH.toLocaleString();
     document.getElementById('mesh_fold_value').textContent = meshFold.toLocaleString();
+    var perLeaf = (dir === 'Two Way') ? Math.round(meshFold/2) : null;
+    var totalRow = document.getElementById('mesh_fold_total_row');
+    var L = document.getElementById('mesh_fold_left_row');
+    var R = document.getElementById('mesh_fold_right_row');
+    var PL = document.getElementById('mesh_fold_per_leaf_row');
+    if (totalRow) totalRow.style.display = (dir === 'Two Way') ? 'none' : '';
+    if (L) L.style.display = (dir === 'Two Way') ? '' : 'none';
+    if (R) R.style.display = (dir === 'Two Way') ? '' : 'none';
+    if (PL) PL.style.display = (dir === 'Two Way') ? 'none' : PL.style.display; /* hide per-leaf when Two Way */
+    if (perLeaf != null){
+      var LV = document.getElementById('mesh_fold_left_value');
+      var RV = document.getElementById('mesh_fold_right_value');
+      if(LV) LV.textContent = perLeaf.toLocaleString();
+      if(RV) RV.textContent = perLeaf.toLocaleString();
+    }    var L = document.getElementById('mesh_fold_left_row');
+    var R = document.getElementById('mesh_fold_right_row');
+    if (L) L.style.display = (dir === 'Two Way') ? '' : 'none';
+    if (R) R.style.display = (dir === 'Two Way') ? '' : 'none';
+    if (perLeaf != null){ document.getElementById('mesh_fold_left_value').textContent = perLeaf.toLocaleString(); document.getElementById('mesh_fold_right_value').textContent = perLeaf.toLocaleString(); }
+    var perLeaf = (dir === 'Two Way') ? Math.round(meshFold/2) : null;
+    var row = document.getElementById('mesh_fold_per_leaf_row');
+    if (row) row.style.display = (dir === 'Two Way') ? '' : 'none';
+    if (perLeaf != null) document.getElementById('mesh_fold_per_leaf_value').textContent = perLeaf.toLocaleString();
 
     // Holes & gap
     let holes = holesByHeight(h);
@@ -245,6 +336,50 @@
 
   document.getElementById('compute').addEventListener('click', compute);
   document.addEventListener('DOMContentLoaded', compute);
+
+  // --- LIVE AUTO-UPDATE ---
+  (function(){
+    var ids = ['direction','width_mm','height_mm','mesh_color','acc_color','replacement','powder_code','client','branch','notes'];
+    function bind(){
+      ids.forEach(function(id){
+        var el = document.getElementById(id);
+        if(!el) return;
+        var evt = (el.tagName === 'SELECT' || el.tagName === 'TEXTAREA') ? 'change' : 'input';
+        el.addEventListener(evt, compute);
+      });
+    }
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', function(){ bind(); compute(); });
+    } else {
+      bind(); compute();
+    }
+  })();
+
+  // POWDER-HOT-BIND: ensure highlight toggles on typing
+  (function(){
+    var p = document.getElementById('powder_code');
+    if(!p) return;
+    function toggle(){ setPowderHighlight(!!(p.value||'').trim()); }
+    p.addEventListener('input', toggle);
+    // initialize once
+    toggle();
+  })();
+
+  // NOTES-HOT-BIND: highlight notes when typing
+  (function(){
+    var n = document.getElementById('notes');
+    if(!n) return;
+    function t(){ setNotesHighlight(!!(n.value||'').trim()); }
+    n.addEventListener('input', t);
+    t();
+  })();
+
+  // REPLACEMENT-HOT-BIND: toggle cuttings block on job type change
+  (function(){
+    var r = document.getElementById('replacement');
+    if(!r) return;
+    r.addEventListener('change', compute);
+  })();
 </script>
 </body>
 </html>
